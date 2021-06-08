@@ -1,9 +1,6 @@
 package entity
 
 type IniConfig struct {
-	//采集器ID
-	ClientID string `ini:"ClientID"`
-
 	//MQTT
 	Broker   string `ini:"Broker"`
 	Port     int    `ini:"Port"`
@@ -13,7 +10,6 @@ type IniConfig struct {
 	Topic    string `ini:"Topic"`
 	Retained int    `ini:"Retained"`
 	Cron     string `ini:"Cron"`
-
 	//Modbus
 	// Device path (/dev/ttyS0)
 	SerialAddress string `ini:"SerialAddress"`

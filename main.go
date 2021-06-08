@@ -6,6 +6,7 @@ import (
 	"github.com/things-go/go-modbus"
 	"log"
 	"niaucz-iot/client"
+	"niaucz-iot/common"
 	"niaucz-iot/config"
 	"niaucz-iot/corn"
 	"niaucz-iot/entity"
@@ -34,15 +35,19 @@ import (
 
 func main() {
 	//读取配置文件
-	ini := config.LodIni("/conf.ini")
+	ini := config.LoadIni()
+	if ini == nil {
+		log.Println("无法从网络和本地加载配置文件 请检查")
+		return
+	}
 	//mqtt和modbus客户端调用
-	mqttClient := client.MqttClient(ini.ClientID, ini.Broker, ini.Port, ini.Username, ini.Password)
+	mqttClient := client.MqttClient(common.DeviceID, ini.Broker, ini.Port, ini.Username, ini.Password)
 	modbusClient := client.ModbusClient(ini.SerialAddress, ini.BaudRate, ini.DataBits, ini.StopBits, ini.Parity, ini.Timeout)
 	//释放资源
 	defer func(modbusClient modbus.Client) {
 		err := modbusClient.Close()
 		if err != nil {
-			log.Println("modbusClient close failed, ", err)
+
 		}
 	}(modbusClient)
 	defer mqttClient.Disconnect(250)
@@ -62,7 +67,7 @@ func main() {
 	log.Println("Start monitoring data...")
 
 	corn.CronFunc(ini.Cron, func() {
-		registers := modbusClientReadHoldingRegisters(modbusClient, ini.ClientID, ini.SlaveID, ini.StartAddress, ini.Quantity)
+		registers := modbusClientReadHoldingRegisters(modbusClient, common.DeviceID, ini.SlaveID, ini.StartAddress, ini.Quantity)
 		mqttClient.Publish(ini.Topic, byte(ini.Qos), ini.Retained == 1, registers)
 	})
 	for {
