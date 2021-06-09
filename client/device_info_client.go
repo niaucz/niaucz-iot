@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//获取设备4G模块信息 详情参见设备说明书
+//获取设备4G模块信息 详情请参见设备说明书
 const (
 	CMD_GET_ATI  = 51
 	CMD_GET_IMEI = 52
@@ -17,6 +17,10 @@ const (
 	CMD_GET_CREG = 111
 )
 
+//func main() {
+//	info := GetDeviceInfo()
+//	fmt.Println(info)
+//}
 func GetDeviceInfo() (deviceInfo entity.DeviceInfo) {
 	n := conn()
 	if n == nil {
@@ -26,14 +30,24 @@ func GetDeviceInfo() (deviceInfo entity.DeviceInfo) {
 	defer n.Close()
 	time.Sleep(time.Millisecond * 20)
 	imei := sendCmd(CMD_GET_IMEI, n)
+	fmt.Printf("imei:%s\n", imei)
+
 	time.Sleep(time.Millisecond * 20)
 	imsi := sendCmd(CMD_GET_IMSI, n)
+	fmt.Printf("imsi:%s\n", imsi)
+
 	time.Sleep(time.Millisecond * 20)
 	cops := sendCmd(CMD_GET_COPS, n)
+	fmt.Printf("cops:%s\n", cops)
+
 	time.Sleep(time.Millisecond * 20)
 	creg := sendCmd(CMD_GET_CREG, n)
+	fmt.Printf("creg:%s\n", creg)
+
 	time.Sleep(time.Millisecond * 20)
 	csq := sendCmd(CMD_GET_CSQ, n)
+	fmt.Printf("csq:%s\n", csq)
+
 	return entity.DeviceInfo{
 		IMEI: imei,
 		IMSI: imsi,
@@ -61,7 +75,7 @@ func sendCmd(cmd byte, conn net.Conn) (data string) {
 		fmt.Printf("Write error:%v\n", err2)
 		return
 	}
-	buf := make([]byte, 20)
+	buf := make([]byte, 50)
 	_, err3 := conn.Read(buf)
 	if err3 != nil {
 		fmt.Printf("err2:%v\n", err3)
@@ -69,3 +83,11 @@ func sendCmd(cmd byte, conn net.Conn) (data string) {
 	}
 	return string(buf[7:])
 }
+
+//fmt.Printf("[THR s]: %s\n", string(buf[:3]))
+//fmt.Printf("[->]: %v\n", buf[3:5])
+//fmt.Printf("[->]: %v\n", buf[5:7])
+//fmt.Printf("[THR s]: %s\n", string(buf[7:]))
+//fmt.Printf("[3->]: %v\n", (buf[3]<<8)+buf[4])
+//fmt.Printf("[5->]: %v\n", (buf[5]<<8)+buf[6])
+//fmt.Println("----------------------")
