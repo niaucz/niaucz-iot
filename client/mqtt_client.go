@@ -12,24 +12,32 @@ func MqttClient(clientID string, broker string, port int, username string, passw
 	opts.SetClientID(clientID)
 	opts.SetUsername(username)
 	opts.SetPassword(password)
-	opts.SetDefaultPublishHandler(messagePubHandler)
-	opts.OnConnect = onConnectHandler
+	opts.SetDefaultPublishHandler(messageHandler)
+	//opts.OnConnectAttempt = OnConnectAttempt
+	opts.OnConnect = onConnect
 	opts.OnConnectionLost = connectionLostHandler
 	opts.OnReconnecting = reconnectHandler
-	return mqtt.NewClient(opts)
+	client := mqtt.NewClient(opts)
+	//订阅下发的指令
+	Sub(client)
+	return client
 }
 
-var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+//var OnConnectAttempt mqtt.ConnectionAttemptHandler = func(broker *url.URL, tlsCfg *tls.Config) *tls.Config {
+//	fmt.Println("ConnectionAttemptHandler")
+//}
+
+var onConnect mqtt.OnConnectHandler = func(client mqtt.Client) {
+	fmt.Println("OnConnectHandler")
+}
+
+var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	fmt.Println("MessageHandler")
 	fmt.Printf("Pub message: %#v from topic: %#v\n", msg.Payload(), msg.Topic())
 }
 
 var reconnectHandler mqtt.ReconnectHandler = func(client mqtt.Client, options *mqtt.ClientOptions) {
-	fmt.Println("MQTT Reconnect")
-}
-
-//连接时调用
-var onConnectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("MQTT Connected")
+	fmt.Println("ReconnectHandler")
 }
 
 //连接无响应时候调用
@@ -37,8 +45,10 @@ var connectionLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, 
 	fmt.Printf("MQTT Connect lost: %v", err)
 }
 
-//发布消息
-func Publish(client mqtt.Client, topic string, qos byte, retained bool, payload []byte) {
-	token := client.Publish(topic, qos, retained, payload)
+//订阅消息
+func Sub(client mqtt.Client) {
+	topic := "topic/command"
+	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
+	fmt.Printf("Subscribed to topic: %s", topic)
 }

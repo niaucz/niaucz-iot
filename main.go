@@ -19,20 +19,6 @@ import (
 //SET GOARCH=arm
 //go build
 
-//订阅消息
-//func sub(client mqtt.Client) {
-//	topic := "topic/test"
-//	token := client.Subscribe(topic, 1, nil)
-//	token.Wait()
-//	fmt.Printf("Subscribed to topic: %s", topic)
-//}
-// 返回一个支持至 秒 级别的 cron
-//func newWithSeconds() *cron.Cron {
-//	secondParser := cron.NewParser(cron.Second | cron.Minute |
-//		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
-//	return cron.New(cron.WithParser(secondParser), cron.WithChain())
-//}
-
 func main() {
 	//读取配置文件
 	ini := config.LoadIni()

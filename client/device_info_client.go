@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"niaucz-iot/entity"
-	"time"
 )
 
 //获取设备4G模块信息 详情请参见设备说明书
@@ -22,38 +21,38 @@ const (
 //	fmt.Println(info)
 //}
 func GetDeviceInfo() (deviceInfo entity.DeviceInfo) {
-	n := conn()
-	if n == nil {
-		fmt.Println("获取连接失败")
-		return
-	}
-	defer n.Close()
-	time.Sleep(time.Millisecond * 20)
-	imei := sendCmd(CMD_GET_IMEI, n)
-	fmt.Printf("imei:%s\n", imei)
-
-	time.Sleep(time.Millisecond * 20)
-	imsi := sendCmd(CMD_GET_IMSI, n)
-	fmt.Printf("imsi:%s\n", imsi)
-
-	time.Sleep(time.Millisecond * 20)
-	cops := sendCmd(CMD_GET_COPS, n)
-	fmt.Printf("cops:%s\n", cops)
-
-	time.Sleep(time.Millisecond * 20)
-	creg := sendCmd(CMD_GET_CREG, n)
-	fmt.Printf("creg:%s\n", creg)
-
-	time.Sleep(time.Millisecond * 20)
-	csq := sendCmd(CMD_GET_CSQ, n)
-	fmt.Printf("csq:%s\n", csq)
+	//n := conn()
+	//if n == nil {
+	//	fmt.Println("获取连接失败")
+	//	return
+	//}
+	//defer n.Close()
+	//time.Sleep(time.Millisecond * 20)
+	//imei := sendCmd(CMD_GET_IMEI, n)
+	//fmt.Printf("imei:%s\n", imei)
+	//
+	//time.Sleep(time.Millisecond * 20)
+	//imsi := sendCmd(CMD_GET_IMSI, n)
+	//fmt.Printf("imsi:%s\n", imsi)
+	//
+	//time.Sleep(time.Millisecond * 20)
+	//cops := sendCmd(CMD_GET_COPS, n)
+	//fmt.Printf("cops:%s\n", cops)
+	//
+	//time.Sleep(time.Millisecond * 20)
+	//creg := sendCmd(CMD_GET_CREG, n)
+	//fmt.Printf("creg:%s\n", creg)
+	//
+	//time.Sleep(time.Millisecond * 20)
+	//csq := sendCmd(CMD_GET_CSQ, n)
+	//fmt.Printf("csq:%s\n", csq)
 
 	return entity.DeviceInfo{
-		IMEI: imei,
-		IMSI: imsi,
-		COPS: cops,
-		CREG: creg,
-		CSQ:  csq,
+		IMEI: "imei",
+		IMSI: "imsi",
+		COPS: "cops",
+		CREG: "creg",
+		CSQ:  "csq",
 	}
 }
 

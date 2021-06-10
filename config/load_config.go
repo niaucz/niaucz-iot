@@ -21,6 +21,7 @@ func LoadIni() (conf *entity.IniConfig) {
 		if network == nil {
 			log.Println("无法从文网络加载配置文件")
 			log.Println("无法加载配置文件")
+
 			return nil
 		}
 		return network
