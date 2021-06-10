@@ -30,18 +30,13 @@ func main() {
 	mqttClient := client.MqttClient(common.DeviceID, ini.Broker, ini.Port, ini.Username, ini.Password)
 	modbusClient := client.ModbusClient(ini.SerialAddress, ini.BaudRate, ini.DataBits, ini.StopBits, ini.Parity, ini.Timeout)
 	//释放资源
-	defer func(modbusClient modbus.Client) {
-		err := modbusClient.Close()
-		if err != nil {
-
-		}
-	}(modbusClient)
+	defer modbusClient.Close()
 	defer mqttClient.Disconnect(250)
 
-	//连接mqttClient
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
-	}
+	////连接mqttClient
+	//if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+	//	panic(token.Error())
+	//}
 
 	//连接modbusClient
 	err := modbusClient.Connect()
@@ -54,7 +49,7 @@ func main() {
 
 	corn.CronFunc(ini.Cron, func() {
 		registers := modbusClientReadHoldingRegisters(modbusClient, common.DeviceID, ini.SlaveID, ini.StartAddress, ini.Quantity)
-		mqttClient.Publish(ini.Topic, byte(ini.Qos), ini.Retained == 1, registers)
+		client.Pub(mqttClient, "data/environment", byte(ini.Qos), ini.Retained == 1, registers)
 	})
 	for {
 		time.Sleep(time.Hour)

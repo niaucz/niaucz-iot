@@ -1,54 +1,53 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func MqttClient(clientID string, broker string, port int, username string, password string) (mqttClient mqtt.Client) {
-	//-------------------MQTT--------------------------
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
 	opts.SetClientID(clientID)
 	opts.SetUsername(username)
 	opts.SetPassword(password)
-	opts.SetDefaultPublishHandler(messageHandler)
-	//opts.OnConnectAttempt = OnConnectAttempt
-	opts.OnConnect = onConnect
-	opts.OnConnectionLost = connectionLostHandler
-	opts.OnReconnecting = reconnectHandler
+	opts.SetDefaultPublishHandler(messagePubHandler)
+	opts.SetCleanSession(false)
+	opts.OnConnect = connectHandler
+	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
-	//订阅下发的指令
-	Sub(client)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+	Sub(client, "mqtt/command")
 	return client
 }
 
-//var OnConnectAttempt mqtt.ConnectionAttemptHandler = func(broker *url.URL, tlsCfg *tls.Config) *tls.Config {
-//	fmt.Println("ConnectionAttemptHandler")
-//}
-
-var onConnect mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("OnConnectHandler")
+var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	info := GetDeviceInfo()
+	marshal, _ := json.Marshal(info)
+	Pub(client, "data/environment", 1, false, marshal)
 }
 
-var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Println("MessageHandler")
-	fmt.Printf("Pub message: %#v from topic: %#v\n", msg.Payload(), msg.Topic())
+var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+	fmt.Println("Connected")
 }
 
-var reconnectHandler mqtt.ReconnectHandler = func(client mqtt.Client, options *mqtt.ClientOptions) {
-	fmt.Println("ReconnectHandler")
+var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+	fmt.Printf("Connect lost: %v", err)
 }
 
-//连接无响应时候调用
-var connectionLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	fmt.Printf("MQTT Connect lost: %v", err)
+//发送
+func Pub(client mqtt.Client, topic string, qos byte, retained bool, payload interface{}) {
+	token := client.Publish(topic, qos, retained, payload)
+	token.Wait()
 }
 
-//订阅消息
-func Sub(client mqtt.Client) {
-	topic := "topic/command"
+//订阅
+func Sub(client mqtt.Client, topic string) {
 	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
+	fmt.Println("Subscribed to topic: pub/command")
 }
